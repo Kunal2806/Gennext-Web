@@ -7,12 +7,12 @@ import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { ScrollToPlugin } from "gsap/ScrollToPlugin";
 import { useGSAP } from "@gsap/react";
-import { Briefcase, GraduationCap, House, Mail, Phone } from "lucide-react";
+import { Briefcase, GraduationCap, Info, Mail, Phone } from "lucide-react";
 
 gsap.registerPlugin(useGSAP, ScrollTrigger, ScrollToPlugin);
 
 const links = [
-  { label: "About Us", href: "#about", icon: House },
+  { label: "About Us", href: "#about", icon: Info },
   { label: "Training", href: "#training", icon: GraduationCap },
   { label: "Services", href: "#services", icon: Briefcase },
   { label: "Contact Us", href: "#contact", icon: Mail },
@@ -25,9 +25,9 @@ function PhoneLink() {
   return (
     <a
       href={phoneHref}
-      className="flex items-center gap-2 font-body text-sm font-bold text-primary-dark"
+      className="flex items-center gap-2 font-body text-sm font-bold"
     >
-      <span className="flex h-8 w-8 items-center justify-center rounded-full bg-white text-primary">
+      <span className="flex h-8 w-8 items-center justify-center rounded-full bg-linear-to-r from-primary-dark to-primary text-white">
         <Phone size={16} />
       </span>
       {phoneText}
@@ -93,9 +93,15 @@ export default function HeroNavbar() {
         "(min-width: 1024px) and (prefers-reduced-motion: no-preference)",
         () => {
           gsap.set(logoEl, { autoAlpha: 0 });
-          let morph = { dx1: 0, dx2: 0, hcy1: 0, hcy2: 0, lcy: 0, sc: 1, end: 1 };
+          let morph = { dx1: 0, hcy1: 0, lcy: 0, sc: 1, end: 1 };
 
           const phoneStart = startOffset(phoneEl, phoneAnchorEl, "left");
+          const setPhoneColor = (p: number) => {
+            phoneEl.style.color = `color-mix(in srgb, var(--color-primary-dark) ${
+              p * 100
+            }%, white)`;
+          };
+          setPhoneColor(0);
           gsap.fromTo(
             phoneEl,
             { x: phoneStart.x, y: phoneStart.y },
@@ -108,6 +114,8 @@ export default function HeroNavbar() {
                 end: () => "+=" + Math.max(phoneStart.y(), 1),
                 scrub: true,
                 invalidateOnRefresh: true,
+                onUpdate: (self) => setPhoneColor(self.progress),
+                onRefresh: (self) => setPhoneColor(self.progress),
               },
             }
           );
@@ -117,18 +125,20 @@ export default function HeroNavbar() {
           );
           const anchors = Array.from(sideMenuEl.children) as HTMLElement[];
           const bg = navEl.querySelector<HTMLElement>("[data-nav-bg]");
+          const lineEl = sideMenuEl.querySelector<HTMLElement>("[data-line]");
+          const borderEl =
+            navEl.querySelector<SVGRectElement>("[data-nav-border]");
           const slide = 60;
           const lead = 44;
-          const pills = items.map((el) =>
-            el.querySelector<HTMLElement>("[data-pill]")
-          );
           const labels = items.map((el) =>
             el.querySelector<HTMLElement>("[data-label]")
           );
           const icons = items.map((el) =>
             el.querySelector<HTMLElement>("[data-icon]")
           );
-          let sizes: { w: number; h: number }[] = [];
+          const rings = items.map((el) =>
+            el.querySelector<HTMLElement>("[data-ring]")
+          );
           let begins: number[] = [];
           let startX: number[] = [];
           let stackX: number[][] = [];
@@ -141,25 +151,29 @@ export default function HeroNavbar() {
             gsap.set(items, { x: 0, y: 0 });
             gsap.set([line1El, line2El], { x: 0, y: 0, scale: 1 });
             const r1 = line1El.getBoundingClientRect();
-            const r2 = line2El.getBoundingClientRect();
             const lr = logoEl.getBoundingClientRect();
             const lcx = lr.left + lr.width / 2;
             const lcy = lr.top + lr.height / 2;
             const hcy1 = r1.top + window.scrollY + r1.height / 2;
             morph = {
               dx1: lcx - (r1.left + r1.width / 2),
-              dx2: lcx - (r2.left + r2.width / 2),
               hcy1,
-              hcy2: r2.top + window.scrollY + r2.height / 2,
               lcy,
               sc: Math.min(lr.width / r1.width, lr.height / r1.height),
               end: Math.max(hcy1 - lcy, 1),
             };
+            if (borderEl) {
+              const bw = navEl.offsetWidth + 24 - 2;
+              const bh = navEl.offsetHeight + 16 - 2;
+              borderEl.setAttribute("width", String(bw));
+              borderEl.setAttribute("height", String(bh));
+              borderEl.setAttribute("rx", String(bh / 2));
+              borderEl.setAttribute("ry", String(bh / 2));
+            }
             const rects = items.map((el) => el.getBoundingClientRect());
             const n = items.length;
             const gap = n > 1 ? rects[1].left - rects[0].right : 0;
             const endRight = rects[n - 1].right;
-            sizes = rects.map((r) => ({ w: r.width, h: r.height }));
             begins = [];
             startX = [];
             stackX = [];
@@ -186,7 +200,7 @@ export default function HeroNavbar() {
             const n = items.length;
             const mp = Math.min(Math.max(s / morph.end, 0), 1);
             const mq = Math.min(Math.max((s - morph.end) / 140, 0), 1);
-            const sink = Math.min(Math.max((mp - 0.45) / 0.55, 0), 1);
+            const fade = Math.min(Math.max(s / (morph.end * 0.5), 0), 1);
             gsap.set(line1El, {
               x: morph.dx1 * mp,
               y: mp * (morph.lcy - (morph.hcy1 - s)),
@@ -195,11 +209,8 @@ export default function HeroNavbar() {
               filter: `blur(${mq * 4}px)`,
             });
             gsap.set(line2El, {
-              x: morph.dx2 * mp,
-              y: mp * (morph.lcy - (morph.hcy2 - s)),
-              scale: 1 + (morph.sc - 1) * mp,
-              opacity: 1 - sink,
-              filter: `blur(${sink * 6}px)`,
+              opacity: 1 - fade,
+              filter: `blur(${fade * 6}px)`,
             });
             gsap.set(logoEl, {
               autoAlpha: mq,
@@ -216,15 +227,21 @@ export default function HeroNavbar() {
               }
               gsap.set(item, { x, y: Math.max(begins[j] - s, 0) });
               const f = prog(s, begins[j]);
-              const inset = ((sizes[j].w - sizes[j].h) / 2) * (1 - f);
-              gsap.set(pills[j], {
-                clipPath: `inset(0px ${inset}px 0px ${inset}px round 999px)`,
-              });
               gsap.set(labels[j], {
                 opacity: Math.min(Math.max((f - 0.4) / 0.6, 0), 1),
               });
               gsap.set(icons[j], { opacity: 1 - Math.min(f / 0.5, 1) });
+              gsap.set(rings[j], { opacity: 1 - Math.min(f / 0.5, 1) });
             });
+            const bq = Math.min(
+              Math.max(
+                (s - begins[0]) / Math.max(begins[n - 1] + slide - begins[0], 1),
+                0
+              ),
+              1
+            );
+            if (borderEl) gsap.set(borderEl, { strokeDashoffset: 1 - bq });
+            if (lineEl) gsap.set(lineEl, { opacity: 1 - bq });
             const shouldShow = s >= begins[n - 1] + slide;
             if (bg && shouldShow !== barOn) {
               barOn = shouldShow;
@@ -249,9 +266,12 @@ export default function HeroNavbar() {
             onUpdate: (self) => update(self.scroll()),
           });
 
+          document.fonts.ready.then(() => {
+            ScrollTrigger.refresh();
+            gsap.set([phoneEl, navEl], { visibility: "visible" });
+          });
+
           let animating = false;
-          let locked = false;
-          let lastWheel = 0;
           let tween: gsap.core.Tween | undefined;
 
           const aboutTop = () => {
@@ -260,6 +280,7 @@ export default function HeroNavbar() {
           };
 
           const goTo = (y: number) => {
+            tween?.kill();
             animating = true;
             const distance = Math.abs(y - window.scrollY);
             tween = gsap.to(window, {
@@ -268,7 +289,6 @@ export default function HeroNavbar() {
               ease: "power1.inOut",
               onComplete: () => {
                 animating = false;
-                locked = true;
               },
             });
           };
@@ -289,19 +309,9 @@ export default function HeroNavbar() {
 
           const onWheel = (e: WheelEvent) => {
             if (e.ctrlKey) return;
-            const now = performance.now();
-            const gap = now - lastWheel;
-            lastWheel = now;
             if (animating) {
               e.preventDefault();
               return;
-            }
-            if (locked) {
-              if (gap < 120) {
-                e.preventDefault();
-                return;
-              }
-              locked = false;
             }
             if (e.deltaY === 0) return;
             if (decide(e.deltaY > 0)) e.preventDefault();
@@ -320,11 +330,23 @@ export default function HeroNavbar() {
             if (decide(down)) e.preventDefault();
           };
 
+          const onNavClick = (e: MouseEvent) => {
+            const a = e.currentTarget as HTMLAnchorElement;
+            const id = a.getAttribute("href")?.slice(1);
+            const target = id ? document.getElementById(id) : null;
+            if (!target) return;
+            e.preventDefault();
+            goTo(target.getBoundingClientRect().top + window.scrollY);
+          };
+
+          items.forEach((el) => el.addEventListener("click", onNavClick));
           window.addEventListener("wheel", onWheel, { passive: false });
           window.addEventListener("keydown", onKey);
 
           return () => {
+            phoneEl.style.color = "";
             tween?.kill();
+            items.forEach((el) => el.removeEventListener("click", onNavClick));
             window.removeEventListener("wheel", onWheel);
             window.removeEventListener("keydown", onKey);
             ScrollTrigger.removeEventListener("refreshInit", measure);
@@ -332,8 +354,6 @@ export default function HeroNavbar() {
           };
         }
       );
-
-      document.fonts.ready.then(() => ScrollTrigger.refresh());
 
       return () => mm.revert();
     },
@@ -344,7 +364,10 @@ export default function HeroNavbar() {
     <div ref={root}>
       <header className="pointer-events-none fixed inset-x-0 top-0 z-50 flex items-center justify-between px-[5vw] py-4">
         <div className="flex items-center gap-6">
-          <div ref={logo} className="pointer-events-auto origin-left">
+          <div
+            ref={logo}
+            className="pointer-events-auto origin-left lg:motion-safe:invisible"
+          >
             <Link href="/">
               <Image
                 src="/logo.png"
@@ -356,20 +379,38 @@ export default function HeroNavbar() {
               />
             </Link>
           </div>
-          <div ref={phone} className="pointer-events-auto hidden sm:block">
+          <div
+            ref={phone}
+            className="pointer-events-auto hidden text-primary-dark sm:block lg:motion-safe:invisible"
+          >
             <PhoneLink />
           </div>
         </div>
 
         <nav
           ref={nav}
-          className="pointer-events-auto relative hidden items-center gap-1 p-1.5 lg:flex"
+          className="pointer-events-auto relative hidden items-center gap-1 p-1.5 lg:flex lg:motion-safe:invisible"
         >
           <div
             data-nav-bg
-            className="absolute inset-0 -z-10 rounded-full bg-primary-dark"
+            className="absolute -inset-x-3 -inset-y-2 -z-10 rounded-full bg-linear-to-r from-primary-dark to-primary"
           />
-          {links.map(({ label, href, icon: Icon }, i) => (
+          <svg
+            aria-hidden
+            className="pointer-events-none absolute -left-3 -top-2 -z-10 h-[calc(100%+1rem)] w-[calc(100%+1.5rem)] overflow-visible"
+          >
+            <rect
+              data-nav-border
+              x="1"
+              y="1"
+              pathLength={1}
+              fill="none"
+              stroke="white"
+              strokeWidth="2"
+              style={{ strokeDasharray: 1, strokeDashoffset: 1 }}
+            />
+          </svg>
+          {links.map(({ label, href, icon: Icon }) => (
             <a
               key={label}
               href={href}
@@ -378,22 +419,17 @@ export default function HeroNavbar() {
               className="relative block font-body text-sm font-bold drop-shadow-md"
             >
               <span
-                data-pill
-                className={`block rounded-full px-4 py-2 ${
-                  i === links.length - 1
-                    ? "bg-white text-primary"
-                    : "bg-primary text-white"
-                }`}
-              >
+                data-ring
+                className="absolute left-1/2 top-1/2 h-9 w-9 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-white bg-primary-dark"
+              />
+              <span className="block px-4 py-2 text-white">
                 <span data-label className="block">
                   {label}
                 </span>
               </span>
               <span
                 data-icon
-                className={`absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 opacity-0 ${
-                  i === links.length - 1 ? "text-primary" : "text-white"
-                }`}
+                className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-white opacity-0"
               >
                 <Icon size={16} />
               </span>
@@ -404,7 +440,7 @@ export default function HeroNavbar() {
 
       <section className="relative h-screen min-h-[640px] overflow-hidden">
         <Image
-          src="/hero-banner.png"
+          src="/hero-banner01.png"
           alt=""
           fill
           priority
@@ -415,18 +451,18 @@ export default function HeroNavbar() {
         <div className="relative z-10 flex h-full max-w-2xl flex-col justify-center px-[5vw]">
           <div className="mb-4 flex items-center gap-3">
             <span className="h-0.5 w-10 bg-primary" />
-            <span className="font-body text-[11px] font-bold uppercase tracking-widest text-primary-dark">
+            <span className="font-body text-[11px] font-bold uppercase tracking-widest text-white">
               Empowering a smarter tomorrow
             </span>
           </div>
 
           <h1
             ref={h1}
-            className="w-fit origin-center font-heading text-4xl font-extrabold leading-tight text-primary-dark lg:text-6xl"
+            className="w-fit origin-center font-heading text-4xl font-extrabold leading-tight text-white lg:text-6xl"
           >
             <span
               ref={line1}
-              className="relative z-10 block w-fit origin-center text-primary"
+              className="relative z-10 block w-fit origin-center text-white"
             >
               Gennext IT
             </span>
@@ -435,7 +471,7 @@ export default function HeroNavbar() {
             </span>
           </h1>
 
-          <p className="mt-5 max-w-md font-body text-base font-semibold text-primary-dark">
+          <p className="mt-5 max-w-md font-body text-base font-semibold text-white">
             We are a trusted IT training, consulting, and managed services
             company, helping individuals and businesses build the skills,
             solutions, and technologies for a smarter, more successful tomorrow.
@@ -458,7 +494,10 @@ export default function HeroNavbar() {
           {links.map(({ label }) => (
             <span key={label} className="h-9 w-9" />
           ))}
-          <span className="visible absolute bottom-[18px] left-1/2 top-[18px] w-0.5 -translate-x-1/2 rounded-full bg-primary/30" />
+          <span
+            data-line
+            className="visible absolute bottom-[18px] left-1/2 top-[18px] w-0.5 -translate-x-1/2 rounded-full bg-white"
+          />
         </div>
       </section>
     </div>
