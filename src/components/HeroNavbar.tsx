@@ -7,12 +7,12 @@ import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { ScrollToPlugin } from "gsap/ScrollToPlugin";
 import { useGSAP } from "@gsap/react";
-import { Briefcase, GraduationCap, Info, Mail, Phone } from "lucide-react";
+import { Briefcase, GraduationCap, Mail, Phone, User } from "lucide-react";
 
 gsap.registerPlugin(useGSAP, ScrollTrigger, ScrollToPlugin);
 
 const links = [
-  { label: "About Us", href: "#about", icon: Info },
+  { label: "About Us", href: "#about", icon: User },
   { label: "Training", href: "#training", icon: GraduationCap },
   { label: "Services", href: "#services", icon: Briefcase },
   { label: "Contact Us", href: "#contact", icon: Mail },
@@ -126,8 +126,9 @@ export default function HeroNavbar() {
           const anchors = Array.from(sideMenuEl.children) as HTMLElement[];
           const bg = navEl.querySelector<HTMLElement>("[data-nav-bg]");
           const lineEl = sideMenuEl.querySelector<HTMLElement>("[data-line]");
-          const borderEl =
-            navEl.querySelector<SVGRectElement>("[data-nav-border]");
+          const borders = Array.from(
+            navEl.querySelectorAll<SVGPathElement>("[data-nav-border]")
+          );
           const slide = 60;
           const lead = 44;
           const labels = items.map((el) =>
@@ -143,6 +144,9 @@ export default function HeroNavbar() {
           let startX: number[] = [];
           let stackX: number[][] = [];
           let barOn = false;
+          const RING = 48;
+          let itemW: number[] = [];
+          const hv: number[] = items.map(() => 0);
 
           const prog = (s: number, b: number) =>
             Math.min(Math.max((s - b) / slide, 0), 1);
@@ -162,15 +166,21 @@ export default function HeroNavbar() {
               sc: Math.min(lr.width / r1.width, lr.height / r1.height),
               end: Math.max(hcy1 - lcy, 1),
             };
-            if (borderEl) {
+            if (borders.length === 2) {
               const bw = navEl.offsetWidth + 24 - 2;
               const bh = navEl.offsetHeight + 16 - 2;
-              borderEl.setAttribute("width", String(bw));
-              borderEl.setAttribute("height", String(bh));
-              borderEl.setAttribute("rx", String(bh / 2));
-              borderEl.setAttribute("ry", String(bh / 2));
+              const r = bh / 2;
+              borders[0].setAttribute(
+                "d",
+                `M ${1 + bw} ${1 + r} A ${r} ${r} 0 0 1 ${1 + bw - r} ${1 + bh} L ${1 + r} ${1 + bh} A ${r} ${r} 0 0 1 1 ${1 + r}`
+              );
+              borders[1].setAttribute(
+                "d",
+                `M ${1 + bw} ${1 + r} A ${r} ${r} 0 0 0 ${1 + bw - r} 1 L ${1 + r} 1 A ${r} ${r} 0 0 0 1 ${1 + r}`
+              );
             }
             const rects = items.map((el) => el.getBoundingClientRect());
+            itemW = rects.map((r) => r.width);
             const n = items.length;
             const gap = n > 1 ? rects[1].left - rects[0].right : 0;
             const endRight = rects[n - 1].right;
@@ -227,11 +237,19 @@ export default function HeroNavbar() {
               }
               gsap.set(item, { x, y: Math.max(begins[j] - s, 0) });
               const f = prog(s, begins[j]);
+              const h = hv[j] * (1 - f);
+              const fadeOut = 1 - Math.min(f / 0.5, 1);
               gsap.set(labels[j], {
-                opacity: Math.min(Math.max((f - 0.4) / 0.6, 0), 1),
+                opacity: Math.max(
+                  Math.min(Math.max((f - 0.4) / 0.6, 0), 1),
+                  h
+                ),
               });
-              gsap.set(icons[j], { opacity: 1 - Math.min(f / 0.5, 1) });
-              gsap.set(rings[j], { opacity: 1 - Math.min(f / 0.5, 1) });
+              gsap.set(icons[j], { opacity: fadeOut * (1 - h) });
+              gsap.set(rings[j], {
+                opacity: fadeOut,
+                width: RING + (itemW[j] - RING) * h,
+              });
             });
             const bq = Math.min(
               Math.max(
@@ -240,8 +258,16 @@ export default function HeroNavbar() {
               ),
               1
             );
-            if (borderEl) gsap.set(borderEl, { strokeDashoffset: 1 - bq });
-            if (lineEl) gsap.set(lineEl, { opacity: 1 - bq });
+            gsap.set(borders, { strokeDashoffset: 1 - bq });
+            if (lineEl) {
+              const cut = Math.max(
+                navEl.getBoundingClientRect().bottom +
+                  8 -
+                  lineEl.getBoundingClientRect().top,
+                0
+              );
+              lineEl.style.clipPath = `inset(${cut}px 0 0 0)`;
+            }
             const shouldShow = s >= begins[n - 1] + slide;
             if (bg && shouldShow !== barOn) {
               barOn = shouldShow;
@@ -340,15 +366,35 @@ export default function HeroNavbar() {
           };
 
           items.forEach((el) => el.addEventListener("click", onNavClick));
+
+          const hoverTo = (j: number, v: number) => {
+            gsap.to(hv, {
+              [j]: v,
+              duration: 0.25,
+              ease: "power2.out",
+              overwrite: "auto",
+              onUpdate: () => update(window.scrollY),
+            });
+          };
+          const hoverHandlers = items.map((_, j) => {
+            const on = () => hoverTo(j, 1);
+            const off = () => hoverTo(j, 0);
+            items[j].addEventListener("mouseenter", on);
+            items[j].addEventListener("mouseleave", off);
+            return { on, off };
+          });
           window.addEventListener("wheel", onWheel, { passive: false });
           window.addEventListener("keydown", onKey);
-
           return () => {
             phoneEl.style.color = "";
             tween?.kill();
             items.forEach((el) => el.removeEventListener("click", onNavClick));
-            window.removeEventListener("wheel", onWheel);
-            window.removeEventListener("keydown", onKey);
+            items.forEach((el, j) => {
+              el.removeEventListener("mouseenter", hoverHandlers[j].on);
+              el.removeEventListener("mouseleave", hoverHandlers[j].off);
+            });
+            gsap.killTweensOf(hv);
+
             ScrollTrigger.removeEventListener("refreshInit", measure);
             ScrollTrigger.removeEventListener("refresh", onRefresh);
           };
@@ -399,10 +445,16 @@ export default function HeroNavbar() {
             aria-hidden
             className="pointer-events-none absolute -left-3 -top-2 -z-10 h-[calc(100%+1rem)] w-[calc(100%+1.5rem)] overflow-visible"
           >
-            <rect
+            <path
               data-nav-border
-              x="1"
-              y="1"
+              pathLength={1}
+              fill="none"
+              stroke="white"
+              strokeWidth="2"
+              style={{ strokeDasharray: 1, strokeDashoffset: 1 }}
+            />
+            <path
+              data-nav-border
               pathLength={1}
               fill="none"
               stroke="white"
@@ -420,9 +472,9 @@ export default function HeroNavbar() {
             >
               <span
                 data-ring
-                className="absolute left-1/2 top-1/2 h-9 w-9 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-white bg-primary-dark"
+                className="absolute left-1/2 top-1/2 h-12 w-12 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-white bg-primary-dark"
               />
-              <span className="block px-4 py-2 text-white">
+              <span className="relative z-10 block px-4 py-2 text-white">
                 <span data-label className="block">
                   {label}
                 </span>
@@ -431,7 +483,7 @@ export default function HeroNavbar() {
                 data-icon
                 className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-white opacity-0"
               >
-                <Icon size={16} />
+                <Icon size={22} />
               </span>
             </a>
           ))}
@@ -489,14 +541,14 @@ export default function HeroNavbar() {
         <div
           ref={sideMenu}
           aria-hidden
-          className="invisible absolute right-6 top-1/2 z-10 hidden -translate-y-1/2 flex-col items-center gap-14 lg:flex motion-reduce:hidden"
+          className="invisible absolute right-[5vw] top-1/2 z-10 hidden -translate-y-1/2 flex-col items-center gap-12 lg:flex motion-reduce:hidden"
         >
           {links.map(({ label }) => (
-            <span key={label} className="h-9 w-9" />
+            <span key={label} className="h-12 w-12" />
           ))}
           <span
             data-line
-            className="visible absolute bottom-[18px] left-1/2 top-[18px] w-0.5 -translate-x-1/2 rounded-full bg-white"
+            className="visible absolute bottom-6 left-1/2 top-6 w-0.5 -translate-x-1/2 rounded-full bg-white"
           />
         </div>
       </section>
