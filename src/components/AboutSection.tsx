@@ -100,10 +100,16 @@ export default function AboutSection() {
             scrollTrigger: {
               trigger: pinEl,
               start: "top top",
-              end: () => "+=" + window.innerHeight * 6,
+              end: () => "+=" + window.innerHeight * 3,
               pin: true,
               scrub: 0.6,
               anticipatePin: 1,
+              snap: {
+                snapTo: "labels",
+                duration: { min: 0.2, max: 0.5 },
+                delay: 0.08,
+                ease: "power1.inOut",
+              },
               invalidateOnRefresh: true,
             },
           });
@@ -138,22 +144,27 @@ export default function AboutSection() {
             { borderRadius: () => shapes.zoom.r() - 8, duration: 1.6 },
             0
           );
-          tl.to(screenTextEl, { autoAlpha: 1, y: 0, duration: 0.6 }, 1.2);
-          tl.to({}, { duration: 1.2 }, 1.8);
+          tl.addLabel("start", 0);
+          tl.to(screenTextEl, { autoAlpha: 1, y: 0, duration: 0.5 }, 1);
+          tl.addLabel("web", 1.6);
+          tl.to({}, { duration: 0.6 }, 1.6);
 
-          tl.to(screenTextEl, { autoAlpha: 0, duration: 0.5 }, 3);
-          morph(shapes.tablet, 3, 1.6);
-          tl.to(items[0], { autoAlpha: 1, y: 0, duration: 0.6 }, 4.2);
-          tl.to({}, { duration: 1.2 }, 4.8);
+          tl.to(screenTextEl, { autoAlpha: 0, duration: 0.4 }, 2.2);
+          morph(shapes.tablet, 2.2, 1.4);
+          tl.to(items[0], { autoAlpha: 1, y: 0, duration: 0.5 }, 2.9);
+          tl.addLabel("tablet", 3.6);
+          tl.to({}, { duration: 0.6 }, 3.6);
 
-          tl.to(items[0], { autoAlpha: 0, y: -30, duration: 0.5 }, 6);
-          morph(shapes.phone, 6, 1.6);
-          tl.to(items[1], { autoAlpha: 1, y: 0, duration: 0.6 }, 7.2);
-          tl.to({}, { duration: 1.2 }, 7.8);
+          tl.to(items[0], { autoAlpha: 0, y: -30, duration: 0.4 }, 4.2);
+          morph(shapes.phone, 4.2, 1.4);
+          tl.to(items[1], { autoAlpha: 1, y: 0, duration: 0.5 }, 4.9);
+          tl.addLabel("phone", 5.6);
+          tl.to({}, { duration: 0.6 }, 5.6);
 
-          tl.to(items[1], { autoAlpha: 0, y: -30, duration: 0.5 }, 9);
-          tl.to(items[2], { autoAlpha: 1, y: 0, duration: 0.6 }, 9.4);
-          tl.to({}, { duration: 1 }, 10);
+          tl.to(items[1], { autoAlpha: 0, y: -30, duration: 0.4 }, 6.2);
+          tl.to(items[2], { autoAlpha: 1, y: 0, duration: 0.5 }, 6.4);
+          tl.addLabel("more", 6.9);
+          tl.to({}, { duration: 0.1 }, 6.9);
         }
       );
 
@@ -164,7 +175,10 @@ export default function AboutSection() {
 
   return (
     <section id="about" ref={root} className="bg-white">
-      <div ref={pin} className="relative overflow-hidden lg:h-screen">
+      <div
+        ref={pin}
+        className="relative overflow-hidden bg-linear-to-b from-white to-background-light lg:h-screen"
+      >
         <div
           ref={device}
           className="absolute left-1/2 top-1/2 z-10 hidden overflow-hidden bg-white p-2 shadow-[0_30px_80px_-20px_rgba(0,80,159,0.35)] lg:motion-safe:block"
@@ -186,7 +200,7 @@ export default function AboutSection() {
             </div>
             <div
               ref={screenText}
-              className="absolute inset-0 flex flex-col items-center justify-center px-8 text-center text-white"
+              className="absolute inset-0 flex flex-col items-center justify-center px-8 pb-[16%] text-center text-white"
             >
               <h3 className="font-heading text-3xl font-extrabold lg:text-5xl">
                 Web Application Development

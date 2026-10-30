@@ -61,6 +61,8 @@ export default function HeroNavbar() {
   const logo = useRef<HTMLDivElement>(null);
   const phone = useRef<HTMLDivElement>(null);
   const phoneAnchor = useRef<HTMLDivElement>(null);
+  const header = useRef<HTMLElement>(null);
+  const heroSection = useRef<HTMLElement>(null);
   const nav = useRef<HTMLElement>(null);
   const sideMenu = useRef<HTMLDivElement>(null);
 
@@ -72,6 +74,8 @@ export default function HeroNavbar() {
       const logoEl = logo.current;
       const phoneEl = phone.current;
       const phoneAnchorEl = phoneAnchor.current;
+      const headerEl = header.current;
+      const heroSectionEl = heroSection.current;
       const navEl = nav.current;
       const sideMenuEl = sideMenu.current;
       if (
@@ -81,11 +85,26 @@ export default function HeroNavbar() {
         !logoEl ||
         !phoneEl ||
         !phoneAnchorEl ||
+        !headerEl ||
+        !heroSectionEl ||
         !navEl ||
         !sideMenuEl
       ) {
         return;
       }
+
+      let headerHasBackground = false;
+      const updateHeaderBackground = () => {
+        const shouldShow = heroSectionEl.getBoundingClientRect().bottom <= 0;
+        if (headerHasBackground === shouldShow) return;
+        headerHasBackground = shouldShow;
+        headerEl.dataset.scrolled = String(shouldShow);
+      };
+      window.addEventListener("scroll", updateHeaderBackground, {
+        passive: true,
+      });
+      window.addEventListener("resize", updateHeaderBackground);
+      updateHeaderBackground();
 
       const mm = gsap.matchMedia();
 
@@ -401,14 +420,21 @@ export default function HeroNavbar() {
         }
       );
 
-      return () => mm.revert();
+      return () => {
+        window.removeEventListener("scroll", updateHeaderBackground);
+        window.removeEventListener("resize", updateHeaderBackground);
+        mm.revert();
+      };
     },
     { scope: root }
   );
 
   return (
     <div ref={root}>
-      <header className="pointer-events-none fixed inset-x-0 top-0 z-50 flex items-center justify-between px-[5vw] py-4">
+      <header
+        ref={header}
+        className="pointer-events-none fixed inset-x-0 top-0 z-50 flex items-center justify-between px-[5vw] py-4 transition-[background-color,backdrop-filter] duration-300 data-[scrolled=true]:bg-white/10 data-[scrolled=true]:backdrop-blur-md"
+      >
         <div className="flex items-center gap-6">
           <div
             ref={logo}
@@ -472,7 +498,7 @@ export default function HeroNavbar() {
             >
               <span
                 data-ring
-                className="absolute left-1/2 top-1/2 h-12 w-12 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-white bg-primary-dark"
+                className="absolute left-1/2 top-1/2 h-12 w-12 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-white bg-linear-to-r from-primary-dark to-primary"
               />
               <span className="relative z-10 block px-4 py-2 text-white">
                 <span data-label className="block">
@@ -490,7 +516,10 @@ export default function HeroNavbar() {
         </nav>
       </header>
 
-      <section className="relative h-screen min-h-[640px] overflow-hidden">
+      <section
+        ref={heroSection}
+        className="relative h-screen min-h-[640px] overflow-hidden"
+      >
         <Image
           src="/hero-banner01.png"
           alt=""
