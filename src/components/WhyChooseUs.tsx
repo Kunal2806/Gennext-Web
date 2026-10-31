@@ -5,6 +5,7 @@ import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useGSAP } from "@gsap/react";
 import { BookOpen, Clock, Compass, Cpu, Target, Users } from "lucide-react";
+import Reveal from "@/components/Reveal";
 
 gsap.registerPlugin(useGSAP, ScrollTrigger);
 
@@ -122,36 +123,41 @@ export default function WhyChooseUs() {
 
       <div className="relative mx-auto grid max-w-7xl gap-16 lg:grid-cols-12">
         <div className="lg:sticky lg:top-28 lg:col-span-5 lg:self-start">
-          <div data-head className="flex items-center gap-3">
-            <span className="h-0.5 w-10 bg-primary" />
-            <span className="font-body text-xs font-bold uppercase tracking-[0.35em] text-slate-400">
-              Why Gennext
-            </span>
-          </div>
-          <p
-            data-head
-            className="mt-6 max-w-md font-body text-lg leading-8 text-slate-500"
-          >
-            We trust in providing value added and optimized services to our
-            customers and focus on quality, schedule and cost. It&apos;s our job
-            to make the customer experience a little bit better.
-          </p>
+          <Reveal from="up">
+            <div data-head className="flex items-center gap-3">
+              <span className="h-0.5 w-10 bg-primary" />
+              <span className="font-body text-xs font-bold uppercase tracking-[0.35em] text-slate-400">
+                Why Gennext
+              </span>
+            </div>
+          </Reveal>
+          <Reveal from="up" delay={80}>
+            <p
+              data-head
+              className="mt-6 max-w-md font-body text-lg leading-8 text-slate-500"
+            >
+              We trust in providing value added and optimized services to our
+              customers and focus on quality, schedule and cost. It&apos;s our job
+              to make the customer experience a little bit better.
+            </p>
+          </Reveal>
 
           <div className="mt-12 grid grid-cols-2 gap-x-6 gap-y-10">
-            {stats.map((s) => (
-              <div
-                key={s.label}
-                data-head
-                className="border-l-2 border-primary/30 pl-5"
-              >
-                <p className="font-heading text-5xl font-extrabold text-primary-dark lg:text-6xl">
-                  <span data-count={s.value}>{s.value}</span>
-                  <span className="text-primary">+</span>
-                </p>
-                <p className="mt-2 font-body text-sm font-semibold text-slate-500">
-                  {s.label}
-                </p>
-              </div>
+            {stats.map((s, index) => (
+              <Reveal key={s.label} from="up" delay={index * 90}>
+                <div
+                  data-head
+                  className="border-l-2 border-primary/30 pl-5"
+                >
+                  <p className="font-heading text-5xl font-extrabold text-primary-dark lg:text-6xl">
+                    <span data-count={s.value}>{s.value}</span>
+                    <span className="text-primary">+</span>
+                  </p>
+                  <p className="mt-2 font-body text-sm font-semibold text-slate-500">
+                    {s.label}
+                  </p>
+                </div>
+              </Reveal>
             ))}
           </div>
         </div>
@@ -164,27 +170,28 @@ export default function WhyChooseUs() {
               className="grid gap-5 bg-background-light sm:grid-cols-2 lg:sticky"
             >
               {pair.map(({ icon: Icon, title, text, i }) => (
-            <div
-              key={title}
-              data-card
-              className="group relative min-h-72 overflow-hidden rounded-3xl border border-primary/10 bg-white p-7 shadow-[0_10px_40px_-15px_rgba(0,80,159,0.2)] transition-shadow duration-500 hover:shadow-[0_25px_60px_-15px_rgba(0,80,159,0.4)] lg:min-h-80"
-            >
-              <span className="absolute inset-0 bg-linear-to-br from-primary-dark to-primary opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
-              <span className="absolute right-6 top-4 font-heading text-6xl font-extrabold text-primary/10 transition-colors duration-500 group-hover:text-white/15">
-                {String(i + 1).padStart(2, "0")}
-              </span>
-              <div className="relative">
-                <span className="flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/10 text-primary transition-colors duration-500 group-hover:bg-white/20 group-hover:text-white">
-                  <Icon size={26} />
-                </span>
-                <h3 className="mt-6 font-heading text-xl font-bold text-primary-dark transition-colors duration-500 group-hover:text-white">
-                  {title}
-                </h3>
-                <p className="mt-3 font-body text-sm leading-7 text-slate-500 transition-colors duration-500 group-hover:text-white/85">
-                  {text}
-                </p>
-              </div>
-            </div>
+                <Reveal key={title} from="up" delay={i * 60}>
+                  <div
+                    data-card
+                    className="group relative min-h-72 overflow-hidden rounded-3xl border border-primary/10 bg-white p-7 shadow-[0_10px_40px_-15px_rgba(0,80,159,0.2)] transition-shadow duration-500 hover:shadow-[0_25px_60px_-15px_rgba(0,80,159,0.4)] lg:min-h-80"
+                  >
+                    <span className="absolute inset-0 bg-linear-to-br from-primary-dark to-primary opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
+                    <span className="absolute right-6 top-4 font-heading text-6xl font-extrabold text-primary/10 transition-colors duration-500 group-hover:text-white/15">
+                      {String(i + 1).padStart(2, "0")}
+                    </span>
+                    <div className="relative">
+                      <span className="flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/10 text-primary transition-colors duration-500 group-hover:bg-white/20 group-hover:text-white">
+                        <Icon size={26} />
+                      </span>
+                      <h3 className="mt-6 font-heading text-xl font-bold text-primary-dark transition-colors duration-500 group-hover:text-white">
+                        {title}
+                      </h3>
+                      <p className="mt-3 font-body text-sm leading-7 text-slate-500 transition-colors duration-500 group-hover:text-white/85">
+                        {text}
+                      </p>
+                    </div>
+                  </div>
+                </Reveal>
               ))}
             </div>
           ))}

@@ -5,6 +5,7 @@ import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useGSAP } from "@gsap/react";
 import { ChevronRight } from "lucide-react";
+import Reveal from "@/components/Reveal";
 
 gsap.registerPlugin(useGSAP, ScrollTrigger);
 
@@ -226,57 +227,66 @@ export default function AboutSection() {
             }}
           />
           <div className="relative w-full bg-white px-[8vw] py-16 shadow-[0_0_80px_rgba(0,142,250,0.12)] lg:px-[4vw] lg:py-[8vh]">
-            <p className="font-body text-sm font-bold uppercase tracking-[0.4em] text-slate-400">
-              Get to know us
-            </p>
-            <span className="mt-3 block h-0.5 w-10 bg-slate-300" />
-            <h2 className="mt-6 font-heading text-4xl font-semibold text-primary-dark lg:text-5xl">
-              About Us
-            </h2>
-            <p className="mt-5 text-justify font-body text-base font-light leading-8 text-slate-500">
-              Gennext is an emerging leader of next-generation Information
-              Technology (IT) services and solutions. Our mission is to provide
-              innovative solutions to our customers through best-in-class
-              technology and industry solutions. We leverage our domain
-              expertise to deliver value for money.
-            </p>
-            <a
-              href="#services"
-              className="mt-8 inline-flex items-center gap-2 rounded-full bg-linear-to-r from-primary to-primary-dark px-8 py-4 font-body font-semibold text-white shadow-lg shadow-primary/30"
-            >
-              Read More
-              <ChevronRight size={18} />
-            </a>
+            <Reveal from="up">
+              <p className="font-body text-sm font-bold uppercase tracking-[0.4em] text-slate-400">
+                Get to know us
+              </p>
+              <span className="mt-3 block h-0.5 w-10 bg-slate-300" />
+            </Reveal>
+            <Reveal from="up" delay={80}>
+              <h2 className="mt-6 font-heading text-4xl font-semibold text-primary-dark lg:text-5xl">
+                About Us
+              </h2>
+            </Reveal>
+            <Reveal from="up" delay={140}>
+              <p className="mt-5 text-justify font-body text-base font-light leading-8 text-slate-500">
+                Gennext is an emerging leader of next-generation Information
+                Technology (IT) services and solutions. Our mission is to provide
+                innovative solutions to our customers through best-in-class
+                technology and industry solutions. We leverage our domain
+                expertise to deliver value for money.
+              </p>
+            </Reveal>
+            <Reveal from="up" delay={200}>
+              <a
+                href="#services"
+                className="mt-8 inline-flex items-center gap-2 rounded-full bg-linear-to-r from-primary to-primary-dark px-8 py-4 font-body font-semibold text-white shadow-lg shadow-primary/30"
+              >
+                Read More
+                <ChevronRight size={18} />
+              </a>
+            </Reveal>
           </div>
         </div>
 
         <div className="relative z-20 px-[8vw] pb-16 lg:motion-safe:absolute lg:motion-safe:inset-y-0 lg:motion-safe:right-[8vw] lg:motion-safe:flex lg:motion-safe:w-[34vw] lg:motion-safe:items-center lg:motion-safe:p-0">
           <div className="relative w-full lg:motion-safe:h-72">
-            {stories.map((s) => (
-              <div
-                key={s.title}
-                data-story
-                className="mb-10 lg:motion-safe:invisible lg:motion-safe:absolute lg:motion-safe:inset-x-0 lg:motion-safe:top-0 lg:motion-safe:mb-0"
-              >
-                <h3 className="font-heading text-4xl font-extrabold text-primary-dark">
-                  {s.title}
-                </h3>
-                <p className="mt-4 font-body text-lg text-slate-600">
-                  {s.text}
-                </p>
-                {s.chips && (
-                  <ul className="mt-6 flex flex-wrap gap-3">
-                    {s.chips.map((c) => (
-                      <li
-                        key={c}
-                        className="rounded-full border border-primary/30 bg-background-light px-4 py-2 font-body text-sm font-semibold text-primary-dark"
-                      >
-                        {c}
-                      </li>
-                    ))}
-                  </ul>
-                )}
-              </div>
+            {stories.map((s, idx) => (
+              <Reveal key={s.title} from="up" delay={idx * 100}>
+                <div
+                  data-story
+                  className="mb-10 lg:motion-safe:invisible lg:motion-safe:absolute lg:motion-safe:inset-x-0 lg:motion-safe:top-0 lg:motion-safe:mb-0"
+                >
+                  <h3 className="font-heading text-4xl font-extrabold text-primary-dark">
+                    {s.title}
+                  </h3>
+                  <p className="mt-4 font-body text-lg text-slate-600">
+                    {s.text}
+                  </p>
+                  {s.chips && (
+                    <ul className="mt-6 flex flex-wrap gap-3">
+                      {s.chips.map((c) => (
+                        <li
+                          key={c}
+                          className="rounded-full border border-primary/30 bg-background-light px-4 py-2 font-body text-sm font-semibold text-primary-dark"
+                        >
+                          {c}
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </div>
+              </Reveal>
             ))}
           </div>
         </div>
