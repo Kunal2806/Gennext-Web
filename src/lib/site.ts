@@ -29,6 +29,31 @@ export const SERVICE_ROUTES = [
   { href: "/services/web-development", label: "Web Development" },
 ] as const;
 
+export const SERVICE_GROUPS = [
+  {
+    heading: "IT Consultancy",
+    links: [
+      { href: "/services/it-advisory", label: "IT Advisory and Consulting" },
+      { href: "/services/it-audits", label: "IT Audits" },
+    ],
+  },
+  {
+    heading: "Application Development",
+    links: [
+      {
+        href: "/services/web-application-development-and-maintenance",
+        label: "Web Application Development And Maintenance",
+      },
+      { href: "/services/mobile-applications", label: "Mobile Applications" },
+      { href: "/services/others", label: "Others" },
+    ],
+  },
+  {
+    heading: "Corporate Training",
+    links: [{ href: "/services/web-development", label: "Web Development" }],
+  },
+] as const;
+
 export const SOCIAL_LINKS = [
   { href: "https://www.facebook.com/gennextit/", label: "Facebook" },
   { href: "https://x.com/gennext_it", label: "Twitter" },

@@ -12,10 +12,10 @@ import { Briefcase, GraduationCap, Mail, Phone, User } from "lucide-react";
 gsap.registerPlugin(useGSAP, ScrollTrigger, ScrollToPlugin);
 
 const links = [
-  { label: "About Us", href: "#about", icon: User },
-  { label: "Training", href: "#training", icon: GraduationCap },
-  { label: "Services", href: "#services", icon: Briefcase },
-  { label: "Contact Us", href: "#contact", icon: Mail },
+  { label: "About Us", href: "/about", icon: User },
+  { label: "Training", href: "/training", icon: GraduationCap },
+  { label: "Services", href: "/services", icon: Briefcase },
+  { label: "Contact Us", href: "/contact", icon: Mail },
 ];
 
 const phoneText = "+91-78400 78095";
