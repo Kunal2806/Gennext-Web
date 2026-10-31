@@ -168,8 +168,9 @@ export default function ServicesSection() {
       let setRotate: ((value: number) => void) | null = null;
 
       const onDown = (e: PointerEvent) => {
-        card = el.querySelector<HTMLElement>(`[data-slide="${index}"]`);
-        if (!card) return;
+        const top = el.querySelector<HTMLElement>(`[data-slide="${index}"]`);
+        if (!top || !top.contains(e.target as Node)) return;
+        card = top;
         gsap.killTweensOf(card);
         setX = gsap.quickTo(card, "x", { duration: 0.18, ease: "power3.out" });
         setRotate = gsap.quickTo(card, "rotate", { duration: 0.18, ease: "power3.out" });
@@ -179,7 +180,7 @@ export default function ServicesSection() {
         velocity = 0;
         startX = lastX = e.clientX;
         lastT = performance.now();
-        el.setPointerCapture(e.pointerId);
+        top.setPointerCapture(e.pointerId);
       };
 
       const onMove = (e: PointerEvent) => {
@@ -331,7 +332,7 @@ export default function ServicesSection() {
           <div
             ref={stage}
             key={tab}
-            className="relative mx-auto h-104 w-72 cursor-grab touch-pan-y select-none active:cursor-grabbing sm:w-80 lg:mr-auto"
+            className="relative mx-auto h-104 w-72 touch-pan-y select-none sm:w-80 lg:mr-auto [&_[data-slide]]:pointer-events-none [&_[data-slide][style*='pointer-events:\_auto']]:cursor-grab"
           >
             {cards.map((card, i) => (
               <Link
@@ -340,7 +341,7 @@ export default function ServicesSection() {
                 data-slide={i}
                 draggable={false}
                 aria-label={card.label}
-                className="absolute inset-0 block overflow-hidden rounded-4xl border-4 border-white bg-background-light opacity-0 shadow-[0_18px_36px_-16px_rgba(0,80,159,0.5)] will-change-transform"
+                className="pointer-events-none absolute inset-0 block overflow-hidden rounded-4xl border-4 border-white bg-background-light opacity-0 shadow-[0_18px_36px_-16px_rgba(0,80,159,0.5)] will-change-transform"
               >
                 <Image
                   src={encodeURI(`/homepage/${card.img}`)}
