@@ -8,6 +8,7 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { ScrollToPlugin } from "gsap/ScrollToPlugin";
 import { useGSAP } from "@gsap/react";
 import { Briefcase, GraduationCap, Mail, Phone, User } from "lucide-react";
+import { CONTACT } from "@/lib/site";
 
 gsap.registerPlugin(useGSAP, ScrollTrigger, ScrollToPlugin);
 
@@ -18,8 +19,8 @@ const links = [
   { label: "Contact Us", href: "#contact", icon: Mail },
 ];
 
-const phoneText = "+91-78400 78095";
-const phoneHref = "tel:+917840078095";
+const phoneText = CONTACT.phone.label;
+const phoneHref = CONTACT.phone.href;
 
 function PhoneLink() {
   return (
